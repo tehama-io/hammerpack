@@ -1,7 +1,7 @@
 {
   "name": "hammerpack",
-  "version": "1.0.0",
-  "description": "Hammerpack is an opinionated build and deployment system for Javascript-based projects.",
+  "version": "0.0.1",
+  "description": "Hammerpack is an opinionated development, test, build, and deployment system for javascript projects.",
   "main": "dist/main.js",
   "repository": {
     "type": "git",
@@ -124,6 +124,7 @@
     "@types/webpack-dev-server": "^2.9.2",
     "@types/winston": "^2.3.7",
     "@types/yargs": "^8.0.2",
-    "nodemon": "^1.12.1"
+    "nodemon": "^1.12.1",
+    "shelljs": "^0.7.8"
   }
 }
