@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/pythian/hammerpack"
   },
-  "author": "Pythian (Atif Ali)",
+  "author": "Pythian and Atif Ali",
   "license": "MIT",
   "bin": {
     "hammerpack": "./dist/main.js"
