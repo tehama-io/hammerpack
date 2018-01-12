@@ -67,7 +67,8 @@ export class NodeExternals {
             const workingDirReq = path.resolve(srcDirContext, request);
             for (const inverseAlias of this.inverseAliases) {
                 const pathToMatch = PathUtils.getAsAbsolutePath(inverseAlias.find, this.workingDir);
-                if (anymatch(pathToMatch, workingDirReq) && !anymatch(pathToMatch, srcDirContext) &&
+                if ((anymatch(pathToMatch, workingDirReq) || pathToMatch.startsWith(workingDirReq)) &&
+                    !anymatch(pathToMatch, srcDirContext) &&
                     !pathToMatch.startsWith(srcDirContext)) {
                     newRequest = inverseAlias.replace;
                     changeRequest = true;
