@@ -35,7 +35,6 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
     protected logger: ILogger;
     protected compileAgain: boolean = false;
     protected runProcess: ChildProcess;
-    protected runProcessQueued: boolean;
     protected watchReady: boolean;
     protected nodeExternals: NodeExternals;
     protected totalProgress: number;
@@ -1188,7 +1187,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
             const newPackageJson = this.generatePackageJson();
             const packageJsonDestFile: string = path.resolve(this.params.config.jobOutDir, "dist", "package.json");
             mkdirp.sync(path.parse(packageJsonDestFile).dir);
-            fs.writeFileSync(packageJsonDestFile, JSON.stringify(newPackageJson), {encoding: "utf8"});
+            fs.writeFileSync(packageJsonDestFile, JSON.stringify(newPackageJson, null, 2), {encoding: "utf8"});
         }
     }
 
@@ -1393,20 +1392,13 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
         });
     }
 
-    protected queueRunProcess(): void {
-        this.runProcessQueued = true;
-        this.startServerProcess();
-    }
-
     /**
      * Starts the server process.
      */
     protected startServerProcess(): void {
-        if (!this.runProcessQueued || !this.canRunProcess()) {
+        if (!this.canRunProcess()) {
             return;
         }
-
-        this.runProcessQueued = false;
 
         this.runProcess = null;
 

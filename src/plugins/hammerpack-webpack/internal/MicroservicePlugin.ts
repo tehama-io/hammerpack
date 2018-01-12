@@ -237,7 +237,7 @@ export class MicroservicePlugin extends AbstractWebpackPlugin {
 
                 if (this.params.type === ETaskType.develop) {
                     this.killCurrentProcess(_.once(() => {
-                        this.queueRunProcess();
+                        this.startServerProcess();
                         this.callResults(compileError);
                     }));
                 } else {
@@ -314,7 +314,7 @@ export class MicroservicePlugin extends AbstractWebpackPlugin {
     }
 
     protected canRunProcess(): boolean {
-        return true;
+        return this.serverStats && !this.serverStats.hasErrors();
     }
 
     protected getExtraNpmModules(): string[] {

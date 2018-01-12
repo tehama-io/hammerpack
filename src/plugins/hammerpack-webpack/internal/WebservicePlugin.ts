@@ -445,7 +445,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
 
                 if (wasCompilingServer && this.params.type === ETaskType.develop) {
                     this.killCurrentProcess(_.once(() => {
-                        this.queueRunProcess();
+                        this.startServerProcess();
                         this.callResults(compileError);
                     }));
                 } else {
@@ -592,7 +592,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
     }
 
     protected canRunProcess(): boolean {
-        return !!this.clientStats;
+        return this.clientStats && this.serverStats && !this.serverStats.hasErrors();
     }
 
     protected getExtraNpmModules(): string[] {
