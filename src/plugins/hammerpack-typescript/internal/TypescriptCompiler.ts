@@ -1169,7 +1169,10 @@ export class TypescriptCompiler {
     private getDefinitionFilePath(srcFilePath: string): string {
         const parsedPath: path.ParsedPath = path.parse(srcFilePath);
         return path.format({
-            base: parsedPath.base.replace(".tsx", ".d.ts").replace(".ts", ".d.ts"),
+            base: parsedPath.base
+                .replace(".js", ".d.ts")
+                .replace(".tsx", ".d.ts")
+                .replace(".ts", ".d.ts"),
             root: parsedPath.root,
             name: parsedPath.name,
             dir: parsedPath.dir,
