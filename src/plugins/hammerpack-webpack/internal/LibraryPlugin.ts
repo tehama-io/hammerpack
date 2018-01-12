@@ -11,17 +11,17 @@ import {ILogger} from "../../../public/api/ILogger";
 import {Task} from "../../../internal/Task";
 import {ITaskPluginInstance} from "../../../public/plugins/ITaskPlugin";
 import {IWebpackBundleOptions} from "./IWebpackBundleOptions";
-import {IWebLibraryOptions} from "../configure/IWebLibraryOptions";
+import {ILibraryOptions} from "../configure/ILibraryOptions";
 import {NodeExternals} from "./NodeExternals";
 import {IWebpackOptions} from "./IWebpackOptions";
 import {IPackageJson} from "../../../public/api/IPackageJson";
 
-export function createWebLibraryPlugin(params: Task, logger: ILogger): ITaskPluginInstance {
-    return new WebLibraryPlugin(params, logger);
+export function createLibraryPlugin(params: Task, logger: ILogger): ITaskPluginInstance {
+    return new LibraryPlugin(params, logger);
 }
 
-export class WebLibraryPlugin extends AbstractWebpackPlugin {
-    options: IWebLibraryOptions;
+export class LibraryPlugin extends AbstractWebpackPlugin {
+    options: ILibraryOptions;
     currentlyCompiling: boolean = false;
     watch: webpack.Compiler.Watching;
     progress: number;
@@ -33,7 +33,7 @@ export class WebLibraryPlugin extends AbstractWebpackPlugin {
     }
 
     protected getPluginName(): string {
-        return "weblibrary";
+        return "library";
     }
 
     protected isCurrentlyCompiling(): boolean {
@@ -175,39 +175,9 @@ export class WebLibraryPlugin extends AbstractWebpackPlugin {
             config.plugins.push(new webpack.ProvidePlugin(this.options.provide));
         }
 
-        config.plugins.push(
-            new webpack.DefinePlugin(this.stringifyDefinePlugin(this.getDefineObject(true, isDevelop))));
-
         config.plugins.push(webpackFailPlugin);
 
         return config;
-    }
-
-    protected getDefineObject(isClient: boolean, isDevelop: boolean) {
-        const defineObj: object = this.options.define || {};
-        const renderEnvValue: string = isClient ? "client" : "server";
-        const nodeEnvValue: string = isDevelop ? "development" : "production";
-
-        if (defineObj[PROCESS_ENV]) {
-            defineObj[PROCESS_ENV][RENDER_ENV] = renderEnvValue;
-            defineObj[PROCESS_ENV][NODE_ENV] = nodeEnvValue;
-        } else if (defineObj[PROCESS]) {
-            if (defineObj[PROCESS][ENV]) {
-                defineObj[PROCESS][ENV][RENDER_ENV] = renderEnvValue;
-                defineObj[PROCESS][ENV][NODE_ENV] = nodeEnvValue;
-            } else {
-                defineObj[PROCESS][ENV] = {
-                    [RENDER_ENV]: renderEnvValue,
-                    [NODE_ENV]: nodeEnvValue
-                };
-            }
-        } else {
-            defineObj[PROCESS_ENV] = {
-                [RENDER_ENV]: renderEnvValue,
-                [NODE_ENV]: nodeEnvValue
-            };
-        }
-        return defineObj;
     }
 
     protected progressHandler(): (percentage: number, msg: string) => void {
@@ -321,7 +291,7 @@ export class WebLibraryPlugin extends AbstractWebpackPlugin {
         if (this.stats) {
             stats = this.stats.toJson(this.getStatsJsonOptions());
             this.logger.info(
-                `WebLibrary bundle for ${this.params.config.project.name} saved at ${this.getDistDir()} in ${((this.stats as any).endTime -
+                `Library bundle for ${this.params.config.project.name} saved at ${this.getDistDir()} in ${((this.stats as any).endTime -
                     (this.stats as any).startTime) / 1000}s.`);
         }
 

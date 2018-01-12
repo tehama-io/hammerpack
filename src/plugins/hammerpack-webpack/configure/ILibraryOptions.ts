@@ -2,7 +2,14 @@ import _ = require("lodash");
 import {IWebpackBundleOptions} from "../internal/IWebpackBundleOptions";
 import {IWebpackOptions} from "../internal/IWebpackOptions";
 
-export interface IWebLibraryOptions extends IWebpackBundleOptions, IWebpackOptions {
+/**
+ * A Library is something that can be:
+ * 1. Cannot be executed on its own.
+ * 2. Can be consumed by other libraries or services.
+ * 3. Outputs UMD format bundle with source and comments, and another UMD format bundle that is minified, uglified, and all source and comments removed.
+ * 4. Can be published to npm
+ */
+export interface ILibraryOptions extends IWebpackBundleOptions, IWebpackOptions {
 
     /**
      * Adds this object to the window object on the client side.
