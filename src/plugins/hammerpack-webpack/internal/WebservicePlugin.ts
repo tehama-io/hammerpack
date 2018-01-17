@@ -1,4 +1,5 @@
 import _ = require("lodash");
+import async = require("async");
 import webpack = require("webpack");
 import * as path from "path";
 import * as fs from "fs";
@@ -22,7 +23,6 @@ export function createWebservicePlugin(params: Task, logger: ILogger): ITaskPlug
 
 export class WebservicePlugin extends AbstractWebpackPlugin {
     options: IWebserviceOptions;
-    initialStartupCompiledOnce: boolean = false;
     currentlyCompilingServer: boolean = false;
     currentlyCompilingClient: boolean = false;
     hotReloadWebpackServer: WebpackDevServer;
@@ -89,7 +89,6 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
         const clientCompiler: webpack.Compiler = webpack(this.generateClientWebpack());
         clientCompiler.plugin("done", (stats: any) => {
             this.clientStats = stats;
-            this.startServerProcess(); // this will start the process if it was waiting for the client stats from before.
         });
 
         const serverCompiler: webpack.Compiler = webpack(
@@ -334,6 +333,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
                 if (percentage === 0) {
                     this.totalProgress = this.clientProgress;
                     this.currentlyCompilingServer = true;
+                    this.serverStats = null;
                 }
             } else {
                 this.clientProgress = percentage;
@@ -342,6 +342,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
                 if (percentage === 0) {
                     this.totalProgress = this.serverProgress;
                     this.currentlyCompilingClient = true;
+                    this.clientStats = null;
                 }
             }
 
@@ -353,7 +354,15 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
 
             if (totalProgress >= 1) {
                 this.totalProgress = 0;
-                this.onDoneCompile();
+
+                if (this.params.type === ETaskType.develop) {
+                    async.doUntil((callback: async.ErrorCallback<Error>) => {
+                            setTimeout(() => callback(), 100);
+                        }, this.canRunProcess.bind(this), this.onDoneCompile.bind(this)
+                    );
+                } else {
+                    this.onDoneCompile();
+                }
             }
         };
     }
@@ -362,12 +371,6 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
      * Called when the compilation is complete. Call this from the progress handler of webpack when it is at 100%.
      */
     protected onDoneCompile(): void {
-        // hot reload webpack always compiles twice at startup for some odd reason.
-        if (!this.initialStartupCompiledOnce && this.params.type === ETaskType.develop) {
-            this.initialStartupCompiledOnce = true;
-            return;
-        }
-
         const wasCompilingServer = this.currentlyCompilingServer;
         const wasCompilingClient = this.currentlyCompilingClient;
         this.currentlyCompilingServer = false;
