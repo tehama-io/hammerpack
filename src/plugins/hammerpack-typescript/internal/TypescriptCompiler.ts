@@ -1320,13 +1320,19 @@ export class TypescriptCompiler {
 
             if (importedFile.startsWith(".")) {
                 // this is a relative file path
-                const absSrcFilePath: string =
+                let absSrcFilePath: string =
                     path.resolve(PathUtils.getAsAbsolutePath(importedFile, path.parse(sourceFile.fileName).dir));
 
                 let srcFilePath: string = path.relative(
                     this.task.config.repo.rootDirectoryPath,
                     absSrcFilePath
                 );
+
+                if (fs.existsSync(absSrcFilePath) && fs.statSync(absSrcFilePath).isDirectory()) {
+                    // if we are importing a directory, it means we have to look for an index.ts or an index.tsx in there
+                    srcFilePath += path.sep + "index";
+                    absSrcFilePath += path.sep + "index";
+                }
 
                 if (!srcFilePath.endsWith(".ts") && fs.existsSync(absSrcFilePath + ".ts")) {
                     srcFilePath += ".ts";
