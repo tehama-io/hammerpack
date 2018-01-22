@@ -302,7 +302,8 @@ export class TypescriptCompiler {
                     }
 
                     const diagnosticsError: Error =
-                        this.maybeThrowError(diagnosticResult.diagnostics, true) || tslintError || error;
+                        this.maybeThrowError(diagnosticResult ? diagnosticResult.diagnostics : [], true)
+                        || tslintError || error;
 
                     if (this.task.type === ETaskType.develop) {
                         // don't throw an error during development so that the process can continue running.
@@ -646,7 +647,7 @@ export class TypescriptCompiler {
                     );
                 }
 
-                const emitError: Error = this.maybeThrowError(emitResult.diagnostics as ts.Diagnostic[], true);
+                const emitError: Error = this.maybeThrowError(emitResult ? emitResult.diagnostics as ts.Diagnostic[] : [], true);
                 if (emitError) {
                     innerCallback(emitError);
                     return;
