@@ -31,6 +31,15 @@ export class SimpleStore implements ISimpleStore {
     }
 
     /**
+     * Returns the entire store as an object.
+     *
+     * @returns {any}
+     */
+    asObject(): any {
+        return nconf.get(this.namespace);
+    }
+
+    /**
      * Returns an array of values given by the key. If the value is not an array, returns an array with a single item
      * of the value.
      *

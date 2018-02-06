@@ -537,7 +537,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
         }
 
         return this.getOptionDefaultToProjectOptionsAsString(
-            defaultPublicUrl, "server:publicUrl", "publicUrl", "PUBLICURL", "PUBLIC_URL");
+            defaultPublicUrl, "server:publicUrl", "PUBLICURL", "PUBLIC_URL");
     }
 
     protected getHotReloadPublicUrl(): string {
@@ -548,7 +548,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
         }
 
         return this.getOptionDefaultToProjectOptionsAsString(
-            defaultPublicUrl, "server:hotreloadPublicUrl", "hotreloadPublicUrl", "HOTRELOADPUBLICURL",
+            defaultPublicUrl, "server:hotreloadPublicUrl", "HOTRELOADPUBLICURL",
             "HOTRELOAD_PUBLICURL", "HOTRELOAD_PUBLIC_URL", "HOT_RELOAD_PUBLIC_URL"
         );
     }
@@ -556,7 +556,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
     protected getHotReloadPort(): number {
         const port: number = this.getPort() + 1;
         return this.getOptionDefaultToProjectOptionsAsNumber(
-            port, "server:hotReloadPort", "hotReloadPort", "HOTRELOADPORT", "HOTRELOAD_PORT", "HOT_RELOAD_PORT");
+            port, "server:hotReloadPort", "HOTRELOADPORT", "HOTRELOAD_PORT", "HOT_RELOAD_PORT");
     }
 
     protected getEnvVariablesForProcess(): object {
@@ -573,6 +573,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
             HAMMERPACK_VERSION: this.params.config.job.id,
             HAMMERPACK_ENABLE_HTTPS: this.getEnableHttps() + "",
             HAMMERPACK_TASK_TYPE: this.params.type,
+            HAMMERPACK_PROJECT_NAME: this.params.config.project.name,
             NODE_ENV: (this.params.type === ETaskType.develop) ? "development" : "production",
             RENDER_ENV: "server"
         };

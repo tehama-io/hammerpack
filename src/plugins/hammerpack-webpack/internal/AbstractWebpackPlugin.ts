@@ -1084,7 +1084,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
      */
     protected getEnableHttps(): boolean {
         return this.getOptionDefaultToProjectOptionsAsBoolean(
-            false, "server:enableHttps", "enableHttps", "ENABLEHTTPS", "ENABLE_HTTPS");
+            false, "server:enableHttps", "ENABLEHTTPS", "ENABLE_HTTPS");
     }
 
     /**
@@ -1093,7 +1093,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
      * @returns {string}
      */
     protected getHost(): string {
-        return this.getOptionDefaultToProjectOptionsAsString("localhost", "server:host", "host", "HOST");
+        return this.getOptionDefaultToProjectOptionsAsString("localhost", "server:host", "HOST");
     }
 
     /**
@@ -1103,7 +1103,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
      */
     protected getPort(): number {
         const port: number = this.getEnableHttps() ? 443 : 80;
-        return this.getOptionDefaultToProjectOptionsAsNumber(port, "server:port", "port", "PORT");
+        return this.getOptionDefaultToProjectOptionsAsNumber(port, "server:port", "PORT");
     }
 
     /**
@@ -1171,6 +1171,26 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
 
         for (const key of keys) {
             val = this.params.projectVars.get(key);
+            if (val) {
+                return val;
+            }
+        }
+
+        // try all lowercase...only do this once we have checked case sensitive for performance reasons.
+        const options: object = {};
+        if (this.params.options) {
+            for (const key in this.params.options.get(this.getPluginName())) {
+                options[key.toLowerCase()] = this.params.options.get(this.getPluginName() + ":" + key);
+            }
+        }
+        if (this.params.projectVars) {
+            for (const key in this.params.projectVars.asObject()) {
+                options[key.toLowerCase()] = this.params.projectVars.get(key);
+            }
+        }
+
+        for (const key of keys) {
+            val = options[key.toLowerCase()];
             if (val) {
                 return val;
             }
