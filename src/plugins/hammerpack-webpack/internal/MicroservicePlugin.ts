@@ -293,6 +293,7 @@ export class MicroservicePlugin extends AbstractWebpackPlugin {
         return {
             HAMMERPACK_VERSION: this.params.config.job.id,
             HAMMERPACK_TASK_TYPE: this.params.type,
+            HAMMERPACK_PROJECT_NAME: this.params.config.project.name,
             NODE_ENV: (this.params.type === ETaskType.develop) ? "development" : "production",
         };
     }

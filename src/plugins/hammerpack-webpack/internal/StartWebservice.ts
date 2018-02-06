@@ -47,7 +47,8 @@ function startServerBundle() {
             clientFiles: process.env.HAMMERPACK_CLIENT_FILES.split(","),
         },
         buildId: process.env.HAMMERPACK_VERSION,
-        taskType: process.env.HAMMERPACK_TASK_TYPE || "build"
+        taskType: process.env.HAMMERPACK_TASK_TYPE || "build",
+        projectName: process.env.HAMMERPACK_PROJECT_NAME
     };
 
     var serverBundleModule;
