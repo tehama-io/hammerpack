@@ -177,6 +177,8 @@ export class LibraryPlugin extends AbstractWebpackPlugin {
 
         config.plugins.push(webpackFailPlugin);
 
+        config.target = "node";
+
         return config;
     }
 
