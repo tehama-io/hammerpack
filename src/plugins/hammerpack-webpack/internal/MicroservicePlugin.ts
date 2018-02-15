@@ -120,7 +120,7 @@ export class MicroservicePlugin extends AbstractWebpackPlugin {
             addSourceMaps: true,
             useHotLoader: false,
             ignoreCss: true,
-            ignoreFileLoader: true,
+            doNotIgnoreFileLoader: true,
             useExtractTextPlugin: false
         });
 

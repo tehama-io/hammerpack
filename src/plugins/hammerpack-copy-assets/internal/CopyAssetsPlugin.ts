@@ -9,6 +9,7 @@ import {ErrorUtil} from "../../../public/utils/ErrorUtil";
 import {PathUtils} from "../../../public/utils/PathUtils";
 import * as fs from "fs";
 import anymatch = require("anymatch");
+import mkdirp = require("mkdirp");
 
 export function createCopyAssetsPlugin(params: Task, logger: ILogger): ITaskPluginInstance {
     return new CopyAssetsPlugin(params, logger);
@@ -122,12 +123,34 @@ class CopyAssetsPlugin implements ITaskPluginInstance {
                     this.params.addSourceToDestFileMapping(filename, destPath);
                     this.params.copyFile(filename, destPath, callback);
                 });
+
+                fns.push((callback: async.ErrorCallback<Error>) => {
+                    const destPath: string = this.getDestDistPath(filename);
+                    if (!destPath) {
+                        callback();
+                        return;
+                    }
+                    this.params.copyFile(filename, destPath, callback);
+                });
             });
 
             // now go through all the deleted files and delete them.
             _.forEach(removedPaths, (filename: string) => {
                 fns.push((callback: async.ErrorCallback<Error>) => {
                     const destPath: string = this.params.getDestPath(filename);
+                    if (!destPath) {
+                        callback();
+                        return;
+                    }
+                    if (fs.existsSync(destPath)) {
+                        fs.unlink(destPath, callback);
+                    } else {
+                        callback();
+                    }
+                });
+
+                fns.push((callback: async.ErrorCallback<Error>) => {
+                    const destPath: string = this.getDestDistPath(filename);
                     if (fs.existsSync(destPath)) {
                         fs.unlink(destPath, callback);
                     } else {
@@ -187,6 +210,54 @@ class CopyAssetsPlugin implements ITaskPluginInstance {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Returns the /dist/resources/ path that can be used by plugins that output to dist.
+     *
+     * @param {string} filepath
+     * @returns {string}
+     */
+    private getDestDistPath(filepath: string): string {
+        const ext = filepath.substring(filepath.lastIndexOf("."));
+        let dir: string;
+        switch (ext) {
+            case ".jpg":
+            case ".jpeg":
+            case ".png":
+            case ".gif":
+            case ".svg":
+            case ".ico":
+                dir = path.resolve(this.params.config.jobOutDir, "dist", "resources", "img");
+                break;
+            case ".woff":
+            case ".woff2":
+            case ".eot":
+            case ".ttf":
+                dir = path.resolve(this.params.config.jobOutDir, "dist", "resources", "fonts");
+                break;
+            case ".js":
+            case ".css":
+            case ".less":
+            case ".sass":
+            case ".scss":
+            case ".env":
+            case ".config":
+            case ".yaml":
+            case ".md":
+            case ".htm":
+            case ".html":
+            case ".txt":
+            case ".csv":
+                // these files should never be copied because they will be processed by other plugins.
+                return null;
+            default:
+                dir = path.resolve(this.params.config.jobOutDir, "dist", "resources", "misc");
+                break;
+        }
+
+        mkdirp.sync(dir);
+        return path.resolve(dir, path.parse(filepath).base);
     }
 }
 

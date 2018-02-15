@@ -172,7 +172,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
             addSourceMaps: true,
             useHotLoader: false,
             ignoreCss: true,
-            ignoreFileLoader: true,
+            doNotIgnoreFileLoader: true,
             useExtractTextPlugin: false
         });
 
@@ -239,7 +239,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
         this.setLoaders({
             config: config,
             ignoreCss: false,
-            ignoreFileLoader: false,
+            doNotIgnoreFileLoader: false,
             useExtractTextPlugin: !isDevelop,
             useHotLoader: true,
             addSourceMaps: isDevelop,
@@ -547,10 +547,9 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
             defaultPublicUrl += ":" + port;
         }
 
-        return this.getOptionDefaultToProjectOptionsAsString(
+        return _.trimEnd(this.getOptionDefaultToProjectOptionsAsString(
             defaultPublicUrl, "server:hotreloadPublicUrl", "HOTRELOADPUBLICURL",
-            "HOTRELOAD_PUBLICURL", "HOTRELOAD_PUBLIC_URL", "HOT_RELOAD_PUBLIC_URL"
-        );
+            "HOTRELOAD_PUBLICURL", "HOTRELOAD_PUBLIC_URL", "HOT_RELOAD_PUBLIC_URL"), "/") + "/";
     }
 
     protected getHotReloadPort(): number {

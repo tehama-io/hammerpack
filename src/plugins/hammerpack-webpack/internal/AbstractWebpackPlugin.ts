@@ -846,7 +846,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
      */
     protected setLoaders(params: ISetLoadersParams) {
 
-        const {config, useHotLoader, useExtractTextPlugin, ignoreCss, ignoreFileLoader, addSourceMaps} = params;
+        const {config, useHotLoader, useExtractTextPlugin, ignoreCss, doNotIgnoreFileLoader, addSourceMaps} = params;
 
         const cacheLoader: any = {
             loader: "cache-loader",
@@ -878,18 +878,18 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
             ]
         };
 
-        if (!ignoreFileLoader) {
+        if (!doNotIgnoreFileLoader) {
             config.module.rules.push({
                 test: /\.(jp[e]?g|png|gif|svg|ico)(\?([a-z0-9=\.]+)?)?$/i,
-                loader: "file-loader?name=img/[name].[ext]"
+                loader: "ignore-loader"
             });
             config.module.rules.push({
                 test: /\.(htm|html|txt|md|csv|pdf|doc|xls|zip)(\?([a-z0-9=\.]+)?)?$/,
-                loader: "file-loader?name=misc/[name].[ext]"
+                loader: "ignore-loader"
             });
             config.module.rules.push({
                 test: /\.(woff|woff2|eot|ttf)(\?([a-z0-9=\.]+)?)?$/,
-                loader: "file-loader?name=fonts/[name].[ext]"
+                loader: "ignore-loader"
             });
         } else {
             // we only want to load non-binary files as text files.
@@ -1449,6 +1449,6 @@ export interface ISetLoadersParams {
     useHotLoader: boolean;
     useExtractTextPlugin: boolean;
     ignoreCss: boolean;
-    ignoreFileLoader: boolean;
+    doNotIgnoreFileLoader: boolean;
     addSourceMaps: boolean;
 }

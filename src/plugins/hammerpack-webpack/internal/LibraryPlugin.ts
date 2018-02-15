@@ -142,7 +142,7 @@ export class LibraryPlugin extends AbstractWebpackPlugin {
         this.setLoaders({
             config: config,
             ignoreCss: false,
-            ignoreFileLoader: false,
+            doNotIgnoreFileLoader: false,
             useExtractTextPlugin: !isDevelop,
             useHotLoader: false,
             addSourceMaps: true,
