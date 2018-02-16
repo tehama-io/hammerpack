@@ -1169,11 +1169,16 @@ export class TypescriptCompiler {
 
     private getDefinitionFilePath(srcFilePath: string): string {
         const parsedPath: path.ParsedPath = path.parse(srcFilePath);
+        if (parsedPath.base.endsWith(".ts") && !parsedPath.base.endsWith(".d.ts")) {
+            parsedPath.base = parsedPath.base.replace(".ts", ".d.ts");
+        } else if (parsedPath.base.endsWith(".js")) {
+            parsedPath.base = parsedPath.base.replace(".js", ".d.ts");
+        } else if (parsedPath.base.endsWith(".tsx")) {
+            parsedPath.base = parsedPath.base.replace(".tsx", ".d.ts");
+        }
+
         return path.format({
-            base: parsedPath.base
-                .replace(".js", ".d.ts")
-                .replace(".tsx", ".d.ts")
-                .replace(".ts", ".d.ts"),
+            base: parsedPath.base,
             root: parsedPath.root,
             name: parsedPath.name,
             dir: parsedPath.dir,
