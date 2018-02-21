@@ -17,4 +17,14 @@ export interface IProject {
      * The description of the project, purely for documentation purposes.
      */
     description: string;
+
+    /**
+     * The absolute path of the directory where this project is located.
+     */
+    directory: string;
+
+    /**
+     * The dependencies of this project. This is an array of absolute paths.
+     */
+    dependencies: string[];
 }

@@ -1119,9 +1119,13 @@ export class TypescriptCompiler {
             try {
                 this.gatherAllImports(sourceFile);
             } catch (e) {
-                // we haven't compiled the program yet so most likely this is why we are getting an exception
-                // so just ignore for now, we can come back to it later.
-                this.logger.error(e);
+                if (e instanceof DependencyError) {
+                    throw e;
+                } else {
+                    // we haven't compiled the program yet so most likely this is why we are getting an exception
+                    // so just ignore for now, we can come back to it later.
+                    this.logger.error(e);
+                }
             }
         }
     }
@@ -1340,6 +1344,22 @@ export class TypescriptCompiler {
                     absSrcFilePath += path.sep + "index";
                 }
 
+                // check if this file can be imported according to project dependencies
+                // it's okay if the import is within the same project...
+                let found: boolean = absSrcFilePath.startsWith(this.task.config.project.directory);
+                if (!found) {
+                    for (const dependency of this.task.config.project.dependencies) {
+                        if (absSrcFilePath.startsWith(dependency)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    throw new DependencyError("The project " + this.task.config.project.name + " cannot depend on " + srcFilePath + " because it is not defined under the project's dependencies.");
+                }
+
                 if (!srcFilePath.endsWith(".ts") && fs.existsSync(absSrcFilePath + ".ts")) {
                     srcFilePath += ".ts";
                     ret.srcFiles.push(
@@ -1471,4 +1491,8 @@ interface IDependencyGraphNode {
 interface IDiagnosticResult {
     diagnostics: ts.Diagnostic[];
     tslintResult: tslint.LintResult;
+}
+
+class DependencyError extends Error {
+    // nothing
 }

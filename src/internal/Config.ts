@@ -117,7 +117,7 @@ export class Config implements IConfig {
     private initializePaths(callback: async.ErrorCallback<Error>): void {
         this.repo = new Repo(this.options, this.workingDir);
         this.job = new Job(this);
-        this.project = new Project(this.options);
+        this.project = new Project(this.options, this.workingDir);
 
         this.hammerpackDir = path.resolve(this.repo.rootDirectoryPath, Config.HAMMERPACK_REPO_FOLDER);
         this.jobOutDir = path.resolve(this.hammerpackDir, this.project.slug, this.job.id);

@@ -15,6 +15,7 @@ export class NodeExternals {
     private srcDir: string;
     private outputDir: string;
     private workingDir: string;
+    private projectDependencies: string[];
     private packageJson: IPackageJson;
     private includeAbsolutePaths: boolean;
     private whitelist: string[];
@@ -24,6 +25,7 @@ export class NodeExternals {
     constructor(logger: ILogger,
                 packageJson: IPackageJson,
                 rootDir: string, srcDir?: string, outputDir?: string, workingDir?: string,
+                projectDependencies?: string[],
                 inverseAliases?: IInverseAliasOptions[],
                 includeAbsolutePaths?: boolean,
                 whitelist?: string[], importType?: string) {
@@ -33,6 +35,7 @@ export class NodeExternals {
         this.srcDir = srcDir;
         this.outputDir = outputDir;
         this.workingDir = workingDir;
+        this.projectDependencies = projectDependencies || [];
         this.inverseAliases = inverseAliases;
         this.includeAbsolutePaths = includeAbsolutePaths;
         this.whitelist = whitelist || [];
@@ -59,20 +62,41 @@ export class NodeExternals {
         let newRequest: string = "";
 
         // first check for inverse aliases
-        if (this.inverseAliases && this.srcDir && this.outputDir && this.inverseAliases.length > 0 && context &&
+        if (this.srcDir && this.outputDir && context &&
             context.startsWith(this.outputDir) &&
             request && request.startsWith(".")) {
             const relativeContext = path.relative(this.outputDir, context);
             const srcDirContext = path.resolve(this.srcDir, relativeContext);
             const workingDirReq = path.resolve(srcDirContext, request);
-            for (const inverseAlias of this.inverseAliases) {
-                const pathToMatch = PathUtils.getAsAbsolutePath(inverseAlias.find, this.workingDir);
-                if ((anymatch(pathToMatch, workingDirReq) || pathToMatch.startsWith(workingDirReq)) &&
-                    !anymatch(pathToMatch, srcDirContext) &&
-                    !pathToMatch.startsWith(srcDirContext)) {
-                    newRequest = inverseAlias.replace;
-                    changeRequest = true;
-                    break;
+
+            // check if this file can be imported according to project dependencies
+            // it's okay if the import is within the same project...
+            if (this.projectDependencies && this.workingDir) {
+                let found: boolean = workingDirReq.startsWith(_.trimEnd(this.workingDir, "/\\"));
+                if (!found) {
+                    for (const dependency of this.projectDependencies) {
+                        if (workingDirReq.startsWith(dependency)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    throw new Error("The file " + workingDirReq + " cannot be imported because it is not defined under the project's dependencies.");
+                }
+            }
+
+            if (this.inverseAliases && this.inverseAliases.length > 0) {
+                for (const inverseAlias of this.inverseAliases) {
+                    const pathToMatch = PathUtils.getAsAbsolutePath(inverseAlias.find, this.workingDir);
+                    if ((anymatch(pathToMatch, workingDirReq) || pathToMatch.startsWith(workingDirReq)) &&
+                        !anymatch(pathToMatch, srcDirContext) &&
+                        !pathToMatch.startsWith(srcDirContext)) {
+                        newRequest = inverseAlias.replace;
+                        changeRequest = true;
+                        break;
+                    }
                 }
             }
         }

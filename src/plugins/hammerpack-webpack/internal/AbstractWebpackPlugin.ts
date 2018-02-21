@@ -220,6 +220,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
                 this.params.config.repo.rootSrcDirectoryPath,
                 path.resolve(this.params.config.jobOutDir, this.params.type),
                 this.params.config.workingDir,
+                this.params.config.project.dependencies,
                 inverseAliases
             );
 
