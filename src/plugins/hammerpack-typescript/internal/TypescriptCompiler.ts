@@ -1493,6 +1493,7 @@ interface IDiagnosticResult {
     tslintResult: tslint.LintResult;
 }
 
+// tslint:disable-next-line
 class DependencyError extends Error {
     // nothing
 }
