@@ -49,6 +49,10 @@ class TypescriptPlugin implements ITaskPluginInstance {
         this.compile(_.once(result));
     }
 
+    test(result: async.AsyncResultCallback<object, Error>): void {
+        this.compile(_.once(result));
+    }
+
     onWatch(eventType: EWatchEventType, fileOrDirPath: string, callback: async.ErrorCallback<Error>): void {
         if (!this.watchReady) {
             if (eventType === EWatchEventType.READY) {

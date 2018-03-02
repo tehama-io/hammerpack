@@ -137,6 +137,12 @@ export class Task implements ITask {
 
                     runner.add(pluginName, (innerCallback: (err?: Error, result?: any) => void): void => {
                         const fnName: string = this.type as string;
+
+                        if (!this.pluginInstances[pluginName][fnName]) {
+                            callback(new Error("The plugin " + pluginName + " does not support the " + fnName + " task type."));
+                            return;
+                        }
+
                         this.pluginInstances[pluginName][fnName]((pluginError: Error, pluginResult: object): void => {
                             results[pluginName] = {
                                 error: pluginError,

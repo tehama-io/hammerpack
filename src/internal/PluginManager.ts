@@ -11,6 +11,7 @@ import reactnative = require("../plugins/hammerpack-reactnative/index");
 import webservice = require("../plugins/hammerpack-webpack/index");
 import rocksdbCache = require("../plugins/hammerpack-cache-rocksdb/index");
 import redisCache = require("../plugins/hammerpack-cache-redis/index");
+import jestPlugin = require("../plugins/hammerpack-jest/index");
 
 /**
  * Plugin manager allows you to add plugins to extend the functionality of Hammerpack.
@@ -59,6 +60,9 @@ export class PluginManager {
 
         PluginManager.pluginModules["hammerpack-webservice"] = true;
         webservice.default(PluginManager.plugins);
+
+        PluginManager.pluginModules["hammerpack-jest"] = true;
+        jestPlugin.default(PluginManager.plugins);
 
 
 

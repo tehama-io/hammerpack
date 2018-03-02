@@ -1,7 +1,9 @@
 export interface ITypescriptPluginOptions {
 
     /**
-     * The files to start compiling from. This just needs to be, for example, the start file like index.ts
+     * The files to start compiling from. This just needs to be, for example, the start file like index.ts.
+     *
+     * It can also be a pattern that uses any of the anymatch rules. Use anymatch syntax (https://www.npmjs.com/package/anymatch). E.g. **\/index.tsx
      *
      * Default: will look for the following file names in the same directory that the config file is in:
      *  - index.ts,

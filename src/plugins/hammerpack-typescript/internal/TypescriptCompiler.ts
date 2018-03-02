@@ -8,6 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import mkdirp = require("mkdirp");
 import * as tslint from "tslint";
+import anymatch = require("anymatch");
 import {ITask} from "../../../public/api/ITask";
 import {ITypescriptPluginOptions} from "../configure/ITypescriptPluginOptions";
 import {PathUtils} from "../../../public/utils/PathUtils";
@@ -144,7 +145,7 @@ export class TypescriptCompiler {
                     };
                 this.compilerHost.getCurrentDirectory = () => this.task.config.workingDir;
 
-                const startFiles: string[] = this.task.options.getAsArray("typescript:compile-files");
+                const startFiles: string[] = this.getCompileFiles();
                 this.oldProgram = ts.createProgram(
                     startFiles.concat(addedOrChangedFiles || []),
                     this.tsconfig, this.compilerHost, this.oldProgram
@@ -755,7 +756,7 @@ export class TypescriptCompiler {
         this.tsconfig.outDir = this.task.taskOutDir;
         this.tsconfig.baseUrl = this.task.config.workingDir;
 
-        // make hammerpack easy to adopt. This is just asking for trouble.
+        // skipLibCheck to make hammerpack easy to adopt. Otherwise, it is just asking for trouble.
         // TODO: maybe add this as an option?
         this.tsconfig.skipLibCheck = true;
 
@@ -765,7 +766,9 @@ export class TypescriptCompiler {
         }
 
         // now figure out the start files
-        let startFiles: string[] = this.task.options.getAsArray("typescript:compile-files");
+        // we will figure out the files to compile for the application and any test files if there are any so that we don't have
+        // to compile everything over again for the test stage specifically.
+        let startFiles: string[] = this.getCompileFiles();
         if (!startFiles || startFiles.length === 0) {
             // search for a start file
             _.forEach(DEFAULT_START_FILE_NAMES, (filename: string) => {
@@ -1447,6 +1450,38 @@ export class TypescriptCompiler {
         });
 
         return ret;
+    }
+
+    private getCompileFiles(): string[] {
+        const compileFiles: string[] = this.task.options.getAsArray("typescript:compile-files") || [];
+        const transformedCompileFiles: string[] = [];
+        for (const file of compileFiles) {
+            const path = PathUtils.getAsAbsolutePath(file, this.task.config.project.directory);
+            transformedCompileFiles.push(path);
+        }
+
+        const retVal: _.Dictionary<true> = {};
+        this.doFindCompileFiles(transformedCompileFiles, this.task.config.project.directory, retVal);
+
+        return _.keys(retVal);
+    }
+
+    private doFindCompileFiles(compileFiles: string[], dir: string, foundFiles: _.Dictionary<true>): void {
+        const contents = fs.readdirSync(dir);
+        _.forEach(contents, (content) => {
+            const fileOrDir = path.resolve(dir, content);
+            const stats = fs.statSync(fileOrDir);
+            if (stats.isDirectory()) {
+                this.doFindCompileFiles(compileFiles, fileOrDir, foundFiles);
+            } else if (stats.isFile() && (fileOrDir.endsWith(".ts") || fileOrDir.endsWith(".tsx"))) {
+                // check if it matches any of the compile files
+                for (const compileFile of compileFiles) {
+                    if (anymatch(compileFile, fileOrDir)) {
+                        foundFiles[fileOrDir] = true;
+                    }
+                }
+            }
+        });
     }
 }
 
