@@ -82,8 +82,11 @@ export class NodeExternals {
                     }
                 }
 
-                if (!found) {
-                    throw new Error("The file " + workingDirReq + " cannot be imported because it is not defined under the project's dependencies.");
+                if (!found && fs.existsSync(workingDirReq)) {
+                    const error = new Error("The file " + workingDirReq + " cannot be imported because it is not defined under the project's dependencies.");
+                    this.logger.error(error);
+                    callback(error);
+                    return;
                 }
             }
 

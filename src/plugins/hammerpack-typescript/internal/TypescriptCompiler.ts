@@ -1467,6 +1467,8 @@ export class TypescriptCompiler {
     }
 
     private doFindCompileFiles(compileFiles: string[], dir: string, foundFiles: _.Dictionary<true>): void {
+        const foundFilePaths: _.Dictionary<true> = {};
+
         const contents = fs.readdirSync(dir);
         _.forEach(contents, (content) => {
             const fileOrDir = path.resolve(dir, content);
@@ -1478,10 +1480,25 @@ export class TypescriptCompiler {
                 for (const compileFile of compileFiles) {
                     if (anymatch(compileFile, fileOrDir)) {
                         foundFiles[fileOrDir] = true;
+                        foundFilePaths[compileFile] = true;
                     }
                 }
             }
         });
+
+        // check if any file that has not been found has a relative path or absolute path defined
+        for (const compileFile of compileFiles) {
+            if (!foundFilePaths[compileFile]) {
+                const fullPath = PathUtils.getAsAbsolutePath(compileFile, dir);
+                if (fs.existsSync(fullPath)) {
+                    const stats = fs.statSync(fullPath);
+                    if (stats.isFile() && (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx"))) {
+                        foundFiles[fullPath] = true;
+                        foundFilePaths[fullPath] = true;
+                    }
+                }
+            }
+        }
     }
 }
 

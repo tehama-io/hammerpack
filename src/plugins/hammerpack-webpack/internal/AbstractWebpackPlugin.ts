@@ -495,7 +495,13 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
             const file = path.resolve(dir, content);
             const stats = fs.statSync(file);
             if (stats.isDirectory()) {
-                this.getTypings(file, fileNames);
+                // first check if this directory is something we should read typings from.
+                const relativeDirPath = path.relative(this.params.taskOutDir, file);
+                const srcDirPath = path.resolve(srcDir, relativeDirPath);
+                const relativeToProjectDir = path.relative(this.params.config.project.directory, srcDirPath);
+                if (!_.startsWith(relativeToProjectDir, "..")) {
+                    this.getTypings(file, fileNames);
+                }
             } else if (stats.isFile() && file.endsWith(".d.ts")) {
                 fileNames[file] = true;
             }

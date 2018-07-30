@@ -1,6 +1,6 @@
 {
   "name": "hammerpack",
-  "version": "0.0.10",
+  "version": "0.0.14",
   "description": "Hammerpack is an opinionated development, test, build, and deployment system for javascript projects.",
   "main": "dist/main.js",
   "repository": {

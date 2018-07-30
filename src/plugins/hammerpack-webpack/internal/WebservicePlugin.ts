@@ -122,6 +122,9 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
             this.serverWatch = serverCompiler.watch({}, (err: Error, stats: webpack.Stats): void => {
                 if (err) {
                     this.logger.error(err);
+                } else if (stats.hasErrors()) {
+                    this.serverStats = stats;
+                    this.callResults(new Error("There was an error in Webpack compilation. See above for more details."));
                 }
             });
         } else {
@@ -473,7 +476,9 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
             if (this.params.type === ETaskType.develop) {
                 this.logger.info(
                     `Webpack Hot-Reload Server for ${this.params.config.project.name} launched at ${this.getHotReloadPublicUrl()} in ${((this.clientStats as any).endTime -
-                        (this.clientStats as any).startTime) / 1000}s.`);
+                        (this.clientStats as any).startTime) / 1000}s. Errors:`);
+                // tslint:disable-next-line
+                console.log(this.clientStats.toString(this.getStatsStringOptions()));
             } else {
                 this.logger.info(
                     `Client bundle for ${this.params.config.project.name} saved at ${this.getDistDir(
@@ -483,10 +488,19 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
         }
         if (this.serverStats) {
             serverStats = this.serverStats.toJson(this.getStatsJsonOptions());
-            this.logger.info(
-                `Server bundle for ${this.params.config.project.name} saved at ${this.getDistDir(
-                    false)} in ${((this.serverStats as any).endTime -
-                    (this.serverStats as any).startTime) / 1000}s.`);
+            if (this.params.type === ETaskType.develop) {
+                this.logger.info(
+                    `Server bundle for ${this.params.config.project.name} saved at ${this.getDistDir(
+                        false)} in ${((this.serverStats as any).endTime -
+                        (this.serverStats as any).startTime) / 1000}s. Errors: `);
+                // tslint:disable-next-line
+                console.log(this.serverStats.toString(this.getStatsStringOptions()));
+            } else {
+                this.logger.info(
+                    `Server bundle for ${this.params.config.project.name} saved at ${this.getDistDir(
+                        false)} in ${((this.serverStats as any).endTime -
+                        (this.serverStats as any).startTime) / 1000}s.`);
+            }
         }
 
         super.callResults(err, {
