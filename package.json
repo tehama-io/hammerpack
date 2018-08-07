@@ -1,6 +1,6 @@
 {
   "name": "hammerpack",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Hammerpack is an opinionated development, test, build, and deployment system for javascript projects.",
   "main": "dist/main.js",
   "repository": {
@@ -84,6 +84,7 @@
     "redisdown": "^0.1.12",
     "rimraf": "~2.6.2",
     "rocksdb": "^1.1.0",
+    "semver": "^5.5.0",
     "source-map-loader": "^0.2.3",
     "source-map-support": "^0.5.0",
     "speakingurl": "^14.0.1",

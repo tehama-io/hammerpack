@@ -1360,7 +1360,7 @@ export class TypescriptCompiler {
                 }
 
                 if (!found) {
-                    throw new DependencyError("The project " + this.task.config.project.name + " cannot depend on " + srcFilePath + " because it is not defined under the project's dependencies.");
+                    throw new DependencyError("The file " + sourceFile.fileName + " imports " + absSrcFilePath + ". The project " + this.task.config.project.name + " cannot depend on " + srcFilePath + " because it is not defined under the project's dependencies.");
                 }
 
                 if (!srcFilePath.endsWith(".ts") && fs.existsSync(absSrcFilePath + ".ts")) {

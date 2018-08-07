@@ -8,6 +8,7 @@ import path = require("path");
 import notifier = require("node-notifier");
 import HappyPack = require("happypack");
 import webpack = require("webpack");
+import semver = require("semver");
 import ExtractTextPlugin = require("extract-text-webpack-plugin");
 import * as os from "os";
 import * as fs from "fs";
@@ -916,7 +917,8 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
             config.module.rules.push({
                 test: /\.js$/,
                 use: ["source-map-loader"],
-                enforce: "pre"
+                enforce: "pre",
+                exclude: path.resolve(this.params.config.repo.rootDirectoryPath, "node_modules")
             });
         }
 
@@ -1433,7 +1435,12 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
         this.logger.info(`Starting server with debug port ${debugPort}...`);
 
         const args: string[] = [];
-        args.push("--debug=" + debugPort);
+
+        if (semver.gte(process.version, "7.0.0")) {
+            args.push("--inspect=" + debugPort);
+        } else {
+            args.push("--debug=" + debugPort);
+        }
 
         if (this.getBundleOptions().memorySize) {
             args.push("--max-old-space-size=" + this.getBundleOptions().memorySize);
