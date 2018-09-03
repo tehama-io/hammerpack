@@ -167,7 +167,7 @@ export class LibraryPlugin extends AbstractWebpackPlugin {
                 }
             }));
 
-            config.plugins.push(new ExtractTextPlugin("[name].[hash].css", {allChunks: true}));
+            config.plugins.push(new ExtractTextPlugin({filename: "[name].[contenthash].css", allChunks: true}));
         }
 
 

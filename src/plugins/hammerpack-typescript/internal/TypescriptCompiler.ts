@@ -1269,7 +1269,7 @@ export class TypescriptCompiler {
                             }
 
                             const callName: string = expression.getText(sourceFile);
-                            if (callName === "require") {
+                            if (callName === "require" || callName === "import") {
                                 const argument = callExpression.arguments[0];
                                 if (argument) {
                                     if (!argument.parent) {
@@ -1277,7 +1277,7 @@ export class TypescriptCompiler {
                                     }
                                     imports.push(argument.getText(sourceFile));
                                 }
-                            } else if (callName === "require.ensure" &&
+                            } else if (callName.indexOf("require") >= 0 && callName.indexOf("ensure") >= 0 &&
                                 callExpression.arguments[0].kind === ts.SyntaxKind.ArrayLiteralExpression) {
                                 const argument2 = callExpression.arguments[0];
                                 if (!argument2.parent) {

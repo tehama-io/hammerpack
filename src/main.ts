@@ -75,7 +75,7 @@ export default class Hammerpack {
      * @returns {Hammerpack}
      */
     loadProcessEnvVars(): Hammerpack {
-        const args: object = yargs(process.argv.slice(2));
+        const args: object = yargs(process.argv.slice(2)).parse();
         this.loadObject(args);
         return this;
     }
@@ -159,13 +159,15 @@ if (require.main === module) {
     confFilePath = PathUtils.getAsAbsolutePath(confFilePath, process.cwd());
     workingDir = path.parse(confFilePath).dir;
 
-    const hammerpack: Hammerpack = Hammerpack.create(workingDir).loadProcessEnvVars();
+    const hammerpack: Hammerpack = Hammerpack.create(workingDir);
     const ext: string = path.parse(confFilePath).ext;
     if (ext === ".yaml") {
         hammerpack.loadYamlFile(confFilePath);
     } else {
         hammerpack.loadJsonFile(confFilePath);
     }
+
+    hammerpack.loadProcessEnvVars();
 
     hammerpack.execute((err: Error, result: _.Dictionary<IPluginJobResult>) => {
         // output only if there is something that needs to be executed.

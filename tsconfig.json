@@ -12,7 +12,8 @@
         "noImplicitThis": false,
         "strictNullChecks": false,
         "declaration": true,
-        
+        "skipLibCheck": true,
+
         "moduleResolution": "node",
         "module": "commonjs",
         "target": "es6",
