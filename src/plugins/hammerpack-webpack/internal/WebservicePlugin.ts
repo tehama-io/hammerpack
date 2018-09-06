@@ -165,6 +165,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
 
         config.output = {
             filename: "[name].js",
+            chunkFilename: "[name].js",
             path: this.getDistDir(false),
             publicPath: isDevelop ? this.getHotReloadPublicUrl() : undefined,
             libraryTarget: "commonjs2"
@@ -235,6 +236,7 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
 
         config.output = {
             filename: isDevelop ? "[name].js" : "[name].[chunkhash].js",
+            chunkFilename: isDevelop ? "[name].js" : "[name].[chunkhash].js",
             path: this.getDistDir(true),
             publicPath: isDevelop ? this.getHotReloadPublicUrl() : browserPath,
         };
@@ -278,7 +280,10 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
                 }
             }));
 
-            config.plugins.push(new ExtractTextPlugin({filename: "[name].[contenthash].css", allChunks: true}));
+            config.plugins.push(new ExtractTextPlugin({
+                filename: "[name].[contenthash].css",
+                allChunks: true
+            }));
         }
 
 
