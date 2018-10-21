@@ -228,6 +228,7 @@ class CopyAssetsPlugin implements ITaskPluginInstance {
             case ".gif":
             case ".svg":
             case ".ico":
+            case ".icns":
                 dir = path.resolve(this.params.config.jobOutDir, "dist", "resources", "img");
                 break;
             case ".woff":
@@ -262,5 +263,5 @@ class CopyAssetsPlugin implements ITaskPluginInstance {
 }
 
 const DEFAULT_PATHS_TO_MATCH: (RegExp | string)[] = [
-    /\.(js|css|less|sass|scss|jp[e]?g|png|gif|svg|ico|htm|html|woff|woff2|eot|ttf|env|config|json|yaml|txt|md|csv|pdf|doc|xls)$/
+    /\.(js|css|less|sass|scss|jp[e]?g|png|gif|svg|ico|icns|htm|html|woff|woff2|eot|ttf|env|config|json|yaml|txt|md|csv|pdf|doc|xls)$/
 ];

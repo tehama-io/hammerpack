@@ -207,10 +207,27 @@ export class TypescriptCompiler {
                                 return;
                             }
 
-                            this.completeCompile(
-                                filesToWatchDict, filesToRunDiagnosticsDict,
-                                sourceFiles, callback, cancellationToken
-                            );
+                            // compare the filesToWatch with the source files to figure out if source files are missing anything
+                            const sourceFilesMap: _.Dictionary<true> = {};
+                            sourceFiles.forEach((sourceFile) => {
+                                sourceFilesMap[sourceFile.fileName] = true;
+                            });
+
+                            const newFiles: string[] = [];
+                            _.keys(filesToWatchDict).forEach((newFile: string) => {
+                                if (!sourceFilesMap[newFile] && fs.existsSync(newFile)) {
+                                    newFiles.push(newFile);
+                                }
+                            });
+
+                            if (newFiles.length > 0) {
+                                this.compile(callback, cancellationToken, newFiles, []);
+                            } else {
+                                this.completeCompile(
+                                    filesToWatchDict, filesToRunDiagnosticsDict,
+                                    sourceFiles, callback, cancellationToken
+                                );
+                            }
                         }
                     );
 
@@ -1453,7 +1470,8 @@ export class TypescriptCompiler {
     }
 
     private getCompileFiles(): string[] {
-        const compileFiles: string[] = this.task.options.getAsArray("typescript:compile-files") || [];
+        const compileFiles: string[] = this.task.options.getAsArray("typescript:compile-files");
+
         const transformedCompileFiles: string[] = [];
         for (const file of compileFiles) {
             const path = PathUtils.getAsAbsolutePath(file, this.task.config.project.directory);
@@ -1477,10 +1495,15 @@ export class TypescriptCompiler {
                 this.doFindCompileFiles(compileFiles, fileOrDir, foundFiles);
             } else if (stats.isFile() && (fileOrDir.endsWith(".ts") || fileOrDir.endsWith(".tsx"))) {
                 // check if it matches any of the compile files
-                for (const compileFile of compileFiles) {
-                    if (anymatch(compileFile, fileOrDir)) {
-                        foundFiles[fileOrDir] = true;
-                        foundFilePaths[compileFile] = true;
+                if (!compileFiles || compileFiles.length === 0) {
+                    foundFiles[fileOrDir] = true;
+                    foundFilePaths[fileOrDir] = true;
+                } else {
+                    for (const compileFile of compileFiles) {
+                        if (anymatch(compileFile, fileOrDir)) {
+                            foundFiles[fileOrDir] = true;
+                            foundFilePaths[compileFile] = true;
+                        }
                     }
                 }
             }
