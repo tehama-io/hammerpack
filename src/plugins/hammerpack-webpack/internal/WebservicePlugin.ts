@@ -592,6 +592,9 @@ export class WebservicePlugin extends AbstractWebpackPlugin {
             HAMMERPACK_ENABLE_HTTPS: this.getEnableHttps() + "",
             HAMMERPACK_TASK_TYPE: this.params.type,
             HAMMERPACK_PROJECT_NAME: this.params.config.project.name,
+            HAMMERPACK_PUBLIC_URL: this.getPublicUrl(),
+            HAMMERPACK_HOST: this.getHost(),
+            HAMMERPACK_PORT: this.getPort() + "",
             NODE_ENV: (this.params.type === ETaskType.develop) ? "development" : "production",
             RENDER_ENV: "server"
         };
