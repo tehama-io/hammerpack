@@ -210,7 +210,7 @@ export class TypescriptCompiler {
                             // compare the filesToWatch with the source files to figure out if source files are missing anything
                             const sourceFilesMap: _.Dictionary<true> = {};
                             sourceFiles.forEach((sourceFile) => {
-                                sourceFilesMap[sourceFile.fileName] = true;
+                                sourceFilesMap[path.normalize(sourceFile.fileName)] = true;
                             });
 
                             const newFiles: string[] = [];
@@ -264,7 +264,7 @@ export class TypescriptCompiler {
         let allSource: string = "";
         _.forEach(sourceFiles, (sourceFile: ts.SourceFile) => {
             allSource += sourceFile.getText(sourceFile);
-            filesToWatchDict[sourceFile.fileName] = true;
+            filesToWatchDict[path.normalize(sourceFile.fileName)] = true;
         });
 
         allSource = ts.sys.createHash(allSource);
@@ -376,7 +376,7 @@ export class TypescriptCompiler {
         callback: async.AsyncResultCallback<IDiagnosticResult, any>): void {
 
         sourceFiles.forEach((sourceFile) => {
-            filesToWatchDict[sourceFile.fileName] = true;
+            filesToWatchDict[path.normalize(sourceFile.fileName)] = true;
             this.setDependants(sourceFile);
         });
 
@@ -468,7 +468,7 @@ export class TypescriptCompiler {
                     null/*, cancellationToken*/));
 
             everythingDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-                this.prevErrorDiagnosticsFiles[diagnostic.file.fileName] = true;
+                this.prevErrorDiagnosticsFiles[path.normalize(diagnostic.file.fileName)] = true;
             });
 
             diagnostics = diagnostics.concat(everythingDiagnostics);
@@ -558,7 +558,9 @@ export class TypescriptCompiler {
         innerCallback: (error?: Error) => void,
         cancellationToken: TypescriptCancellationToken): void {
 
-        if (skipFiles[sourceFile.fileName] || sourceFile.fileName.endsWith(".d.ts")) {
+        const sourceFileName = path.normalize(sourceFile.fileName);
+
+        if (skipFiles[sourceFileName] || sourceFileName.endsWith(".d.ts")) {
             // 1. return immediately if we are skipping this file.
             // 2. return immediately if it is a definition file. Currently, we do not process the type definition files.
             innerCallback(null);
@@ -566,16 +568,16 @@ export class TypescriptCompiler {
         }
 
         // just in case typescript compiler gave us back sources that have duplicates.
-        skipFiles[sourceFile.fileName] = true;
+        skipFiles[sourceFileName] = true;
 
-        const destFilePathStr: string = this.getDestFilePath(sourceFile.fileName);
+        const destFilePathStr: string = this.getDestFilePath(sourceFileName);
 
         const relativeFilename: string = path.relative(
             this.task.config.repo.rootDirectoryPath,
-            sourceFile.fileName
+            sourceFileName
         );
 
-        const hash = ts.sys.createHash(this.readFile(sourceFile.fileName));
+        const hash = ts.sys.createHash(this.readFile(sourceFileName));
         this.setDependants(sourceFile, hash);
 
         this.cacheUtil.getFile({
@@ -594,7 +596,7 @@ export class TypescriptCompiler {
                             this.writeFile(destFilePathStr + ".map", value.mapText);
                         }
                         if (value.definitionText) {
-                            this.writeFile(this.getDestDefinitionFilePath(sourceFile.fileName), value.definitionText);
+                            this.writeFile(this.getDestDefinitionFilePath(sourceFileName), value.definitionText);
                         }
                     }
                 } catch (e) {
@@ -608,7 +610,7 @@ export class TypescriptCompiler {
                             dependency, this.task.config.repo.rootDirectoryPath)] = true);
                 }
 
-                const dependencyNode: IDependencyGraphNode = this.dependencyGraph[sourceFile.fileName];
+                const dependencyNode: IDependencyGraphNode = this.dependencyGraph[sourceFileName];
                 if (dependencyNode) {
                     _.forEach(dependencyNode.dependants, (value: true, dependant: string) => {
                         filesToWatchDict[dependant] = true;
@@ -675,7 +677,7 @@ export class TypescriptCompiler {
                 if (value) {
                     dependencies = value.dependencies;
                 } else {
-                    const dependencyGraphNode: IDependencyGraphNode = this.dependencyGraph[sourceFile.fileName];
+                    const dependencyGraphNode: IDependencyGraphNode = this.dependencyGraph[sourceFileName];
                     if (dependencyGraphNode && dependencyGraphNode.dependencies) {
                         dependencies = _.keys(dependencyGraphNode.dependencies);
                     } else {
@@ -693,7 +695,7 @@ export class TypescriptCompiler {
                             dependency, this.task.config.repo.rootDirectoryPath)] = true);
                 }
 
-                const dependencyNode: IDependencyGraphNode = this.dependencyGraph[sourceFile.fileName];
+                const dependencyNode: IDependencyGraphNode = this.dependencyGraph[sourceFileName];
                 if (dependencyNode) {
                     _.forEach(dependencyNode.dependants, (value: true, dependant: string) => {
                         filesToWatchDict[dependant] = true;
@@ -712,10 +714,11 @@ export class TypescriptCompiler {
                     dependencies: dependencies,
                 }, (error: Error) => {
                     if (error) {
+
                         this.logger.warn(ErrorUtil.customize(
                             error,
                             "An error occurred while trying to save the output of file " +
-                            sourceFile.fileName +
+                            sourceFileName +
                             " into the cache."
                         ));
                     }
@@ -1116,14 +1119,15 @@ export class TypescriptCompiler {
     }
 
     private setDependants(sourceFile: ts.SourceFile, hash?: string): void {
-        if (sourceFile.fileName.endsWith(".d.ts")) {
+        const sourceFileName = path.normalize(sourceFile.fileName);
+        if (sourceFileName.endsWith(".d.ts")) {
             // ignore .d.ts files
             return;
         }
 
-        hash = hash || ts.sys.createHash(this.readFile(sourceFile.fileName));
+        hash = hash || ts.sys.createHash(this.readFile(sourceFileName));
 
-        const node: IDependencyGraphNode = this.dependencyGraph[sourceFile.fileName];
+        const node: IDependencyGraphNode = this.dependencyGraph[sourceFileName];
         if (!node || node.lastChecked !== hash) {
 
             if (node && node.lastChecked !== hash && node.dependencies) {
@@ -1131,7 +1135,7 @@ export class TypescriptCompiler {
                 _.forEach(node.dependencies, (value: true, dependency: string) => {
                     const dependencyNode: IDependencyGraphNode = this.dependencyGraph[dependency];
                     if (dependencyNode && dependencyNode.dependants) {
-                        delete dependencyNode.dependants[sourceFile.fileName];
+                        delete dependencyNode.dependants[sourceFileName];
                     }
                 });
             }
@@ -1227,7 +1231,7 @@ export class TypescriptCompiler {
             if (diagnostic.file) {
                 const {line, character} = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
                 const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-                messages.push(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+                messages.push(`${path.normalize(diagnostic.file.fileName)} (${line + 1},${character + 1}): ${message}`);
             } else {
                 messages.push(`${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`);
             }
@@ -1331,7 +1335,8 @@ export class TypescriptCompiler {
             nonSrcFiles: []
         };
 
-        if (sourceFile.fileName.endsWith(".d.ts")) {
+        const sourceFileName = path.normalize(sourceFile.fileName);
+        if (sourceFileName.endsWith(".d.ts")) {
             return ret;
         }
 
@@ -1343,7 +1348,7 @@ export class TypescriptCompiler {
                     importedFile = JSON.parse(importedFile);
                 } catch (e) {
                     this.logger.warn("Don't know how to import module '" + importedFile + "' at file " +
-                        sourceFile.fileName);
+                        sourceFileName);
                     return;
                 }
             }
@@ -1351,7 +1356,7 @@ export class TypescriptCompiler {
             if (importedFile.startsWith(".")) {
                 // this is a relative file path
                 let absSrcFilePath: string =
-                    path.resolve(PathUtils.getAsAbsolutePath(importedFile, path.parse(sourceFile.fileName).dir));
+                    path.resolve(PathUtils.getAsAbsolutePath(importedFile, path.parse(sourceFileName).dir));
 
                 let srcFilePath: string = path.relative(
                     this.task.config.repo.rootDirectoryPath,
@@ -1377,7 +1382,7 @@ export class TypescriptCompiler {
                 }
 
                 if (!found) {
-                    throw new DependencyError("The file " + sourceFile.fileName + " imports " + absSrcFilePath + ". The project " + this.task.config.project.name + " cannot depend on " + srcFilePath + " because it is not defined under the project's dependencies.");
+                    throw new DependencyError("The file " + sourceFileName + " imports " + absSrcFilePath + ". The project " + this.task.config.project.name + " cannot depend on " + srcFilePath + " because it is not defined under the project's dependencies.");
                 }
 
                 if (!srcFilePath.endsWith(".ts") && fs.existsSync(absSrcFilePath + ".ts")) {
@@ -1418,7 +1423,7 @@ export class TypescriptCompiler {
                 } else {
                     // check if the file exists at the same file dir
                     let maybeSrcFilePath: string = path.resolve(PathUtils.getAsAbsolutePath(
-                        importedFile, path.parse(sourceFile.fileName).dir));
+                        importedFile, path.parse(sourceFileName).dir));
 
                     if (!maybeSrcFilePath.endsWith(".ts") && fs.existsSync(maybeSrcFilePath + ".ts")) {
                         maybeSrcFilePath += ".ts";
@@ -1433,14 +1438,14 @@ export class TypescriptCompiler {
             }
         });
 
-        let currentFileNode: IDependencyGraphNode = this.dependencyGraph[sourceFile.fileName];
+        let currentFileNode: IDependencyGraphNode = this.dependencyGraph[sourceFileName];
         if (!currentFileNode) {
             currentFileNode = {
                 lastChecked: ts.sys.createHash(sourceFile.text),
                 dependencies: {},
                 dependants: {}
             };
-            this.dependencyGraph[sourceFile.fileName] = currentFileNode;
+            this.dependencyGraph[sourceFileName] = currentFileNode;
         } else {
             currentFileNode.dependencies = {};
             currentFileNode.lastChecked = ts.sys.createHash(sourceFile.text);
@@ -1463,7 +1468,7 @@ export class TypescriptCompiler {
                 this.dependencyGraph[absolutePath] = dependencyNode;
             }
 
-            dependencyNode.dependants[sourceFile.fileName] = true;
+            dependencyNode.dependants[sourceFileName] = true;
         });
 
         return ret;

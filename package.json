@@ -1,6 +1,6 @@
 {
   "name": "hammerpack",
-  "version": "0.0.21",
+  "version": "0.0.23",
   "description": "Hammerpack is an opinionated development, test, build, and deployment system for javascript projects.",
   "main": "dist/main.js",
   "repository": {
@@ -80,7 +80,6 @@
     "node-sass": "^4.7.2",
     "ps-node": "^0.1.6",
     "raw-loader": "^0.5.1",
-    "react-hot-loader": "^4.7.1",
     "redisdown": "^0.1.12",
     "rimraf": "~2.6.2",
     "rocksdb": "^1.1.0",
@@ -89,6 +88,7 @@
     "source-map-support": "^0.5.0",
     "speakingurl": "^14.0.1",
     "style-loader": "^0.19.0",
+    "tree-kill": "^1.2.1",
     "ts-jest": "^22.0.4",
     "tsickle": "^0.25.0",
     "tslib": "^1.9.3",
@@ -131,5 +131,12 @@
     "@types/yargs": "^8.0.2",
     "nodemon": "^1.12.1",
     "shelljs": "^0.7.8"
+  },
+  "peerDependencies": {
+    "react-hot-loader": "^4.7.1"
+  },
+  "optionalDependencies": {
+    "react": ">=15.0.0",
+    "react-dom": ">=15.0.0"
   }
 }

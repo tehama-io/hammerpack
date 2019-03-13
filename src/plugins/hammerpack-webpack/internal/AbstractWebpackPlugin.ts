@@ -3,6 +3,7 @@ import _ = require("lodash");
 import crypto = require("crypto");
 import anymatch = require("anymatch");
 import psnode = require("ps-node");
+import kill = require("tree-kill");
 import findprocess = require("find-process");
 import path = require("path");
 import notifier = require("node-notifier");
@@ -47,6 +48,8 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
     constructor(params: Task, logger: ILogger) {
         this.params = params;
         this.logger = logger;
+
+        process.on("SIGTERM", this.onSigTerm);
     }
 
     /**
@@ -1398,7 +1401,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
      * @param {ErrorCallback<Error>} callback
      */
     protected killProcess(pid: number, callback: async.ErrorCallback<Error>): void {
-        psnode.kill(pid, (err: Error) => {
+        kill(pid, (err: Error) => {
             if (err) {
                 // ignore the error, since we were just killing processes to be careful.
                 callback();
@@ -1455,6 +1458,12 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
         this.runProcess.on("close", () => this.runProcess = null);
         this.runProcess.on("disconnect", () => this.runProcess = null);
         this.runProcess.on("exit", () => this.runProcess = null);
+    }
+
+    onSigTerm = () => {
+        this.killCurrentProcess(() => {
+            process.exit(0);
+        });
     }
 }
 
