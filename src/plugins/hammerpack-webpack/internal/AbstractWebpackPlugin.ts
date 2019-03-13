@@ -1401,7 +1401,7 @@ export abstract class AbstractWebpackPlugin implements ITaskPluginInstance {
      * @param {ErrorCallback<Error>} callback
      */
     protected killProcess(pid: number, callback: async.ErrorCallback<Error>): void {
-        kill(pid, (err: Error) => {
+        psnode.kill(pid, (err: Error) => {
             if (err) {
                 // ignore the error, since we were just killing processes to be careful.
                 callback();
