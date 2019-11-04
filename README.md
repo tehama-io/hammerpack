@@ -1,3 +1,7 @@
+# DEPRECATED
+
+## This tool has been deprecated. For managing mono-repos, please use https://nx.dev and https://github.com/apployees/apployees-nx.
+
 # Hammerpack
 
 Hammerpack is an opinionated development, test, build, and deployment system for javascript projects. 
